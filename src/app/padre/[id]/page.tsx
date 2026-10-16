@@ -1,11 +1,11 @@
 ﻿"use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
 import { CheckCircle2, Navigation, AlertTriangle, Clock } from "lucide-react";
 import { useParams } from "next/navigation";
 
-function ParentPickupView() {
+function ParentContent() {
   const params = useParams();
   const studentId = params?.id as string;
   const { students, updateStudentStatus } = usePickupRealtime();
@@ -95,4 +95,16 @@ function ParentPickupView() {
   );
 }
 
-export default ParentPickupView;
+export default function ParentPickupView() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400 font-sans">
+          Cargando pase de recogida...
+        </div>
+      }
+    >
+      <ParentContent />
+    </Suspense>
+  );
+}
