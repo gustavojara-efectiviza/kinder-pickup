@@ -4,8 +4,9 @@ import React, { Suspense, useState, useMemo, useEffect, useRef } from "react";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
 import { PickupStatus, RoomId, ShiftType } from "@/types/pickup";
 import confetti from "canvas-confetti";
-import { Users, AlertCircle, Bell, RefreshCw, Pill, Utensils, MapPin, Timer, Clock, Cake } from "lucide-react";
+import { Users, AlertCircle, Bell, RefreshCw, Pill, Utensils, MapPin, Timer, Clock, Cake, Maximize2, Minimize2 } from "lucide-react";
 import { getBirthdayInfo } from "@/core/birthday";
+import AppNavigation from "@/components/AppNavigation";
 
 const STATUS_CONFIG: Record<PickupStatus, { label: string; color: string; border: string }> = {
   ABSENT: { label: "Ausente", color: "bg-slate-200 text-slate-600", border: "border-slate-300" },
@@ -50,6 +51,7 @@ function TVDashboard() {
   const [selectedRoom, setSelectedRoom] = useState<RoomId | "ALL">("ALL");
   const [selectedShift, setSelectedShift] = useState<ShiftType | "ALL">(defaultShift);
   const [today, setToday] = useState<Date>(() => new Date());
+  const [hideNav, setHideNav] = useState<boolean>(false);
 
   // Refresca la fecha para que los conteos de cumpleaños cambien al pasar la medianoche
   useEffect(() => {
@@ -138,70 +140,107 @@ function TVDashboard() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-950 text-white font-sans">
-        <RefreshCw className="animate-spin w-8 h-8 mr-3 text-amber-400" />
+        <RefreshCw className="animate-spin w-8 h-8 mr-3 text-blue-400" />
         <span className="text-xl">Conectando a la central en tiempo real...</span>
       </div>
     );
   }
 
   const filterBtn = (active: boolean) =>
-    `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-      active ? "bg-amber-400 text-slate-950" : "text-slate-400 hover:text-white"
+    `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+      active
+        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 border border-blue-400/40"
+        : "text-slate-400 hover:text-white hover:bg-slate-800/80"
     }`;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-6 flex flex-col font-sans select-none">
-      <header className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-amber-400/10 rounded-2xl border border-amber-400/20 text-amber-400">
-            <Users className="w-8 h-8" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Panel de Recogida &amp; Asistencia</h1>
-            <p className="text-xs text-slate-400">Recepción / Control de Salida en Vivo · {counts.total} alumnos</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none">
+      {!hideNav && (
+        <AppNavigation
+          current="tv"
+          isFullscreen={hideNav}
+          onToggleFullscreen={() => setHideNav(true)}
+        />
+      )}
 
-        <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center">
-            <span className="block text-2xl font-black text-emerald-400">{counts.present}</span>
-            <span className="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider">En Sala</span>
-          </div>
-          <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
-            <span className="block text-2xl font-black text-amber-400">{counts.onTheWay}</span>
-            <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">En Camino</span>
-          </div>
-          <div className="px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-center">
-            <span className="block text-2xl font-black text-indigo-400">{counts.arrived}</span>
-            <span className="text-[10px] text-indigo-300 font-semibold uppercase tracking-wider">En Puerta</span>
-          </div>
-        </div>
+      {hideNav && (
+        <button
+          onClick={() => setHideNav(false)}
+          title="Salir de pantalla completa y mostrar barra"
+          className="fixed top-3 right-3 z-50 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 hover:text-white backdrop-blur shadow-lg transition-colors"
+        >
+          <Minimize2 className="w-3.5 h-3.5 text-amber-400" />
+          <span>Mostrar Barra</span>
+        </button>
+      )}
 
-        <div className="flex flex-col gap-2 items-end">
-          <div className="flex items-center gap-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
-            <Clock className="w-4 h-4 text-slate-500 mx-1.5" />
-            {SHIFT_FILTERS.map((f) => (
-              <button key={f.id} onClick={() => setSelectedShift(f.id)} className={filterBtn(selectedShift === f.id)}>
-                {f.label}
-              </button>
-            ))}
+      <main className="p-4 sm:p-6 flex-1 flex flex-col">
+        <header className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+          <div className="flex items-center gap-3.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Pequeños Héroes"
+              className="h-12 w-auto object-contain rounded-xl bg-white/95 p-1 border border-sky-400/30 shadow-md"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-black tracking-tight text-white">PEQUEÑOS HÉROES</h1>
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-300 border border-blue-500/30">
+                  EDI N° 8161
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">Recepción / Control de Salida en Vivo · {counts.total} alumnos</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
-            {ROOM_FILTERS.map((f) => (
-              <button key={f.id} onClick={() => setSelectedRoom(f.id)} className={filterBtn(selectedRoom === f.id)}>
-                {f.label}
-              </button>
-            ))}
-            <button
-              onClick={() => resetDailyStatuses()}
-              title="Reiniciar estados del día"
-              className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors ml-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
+
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center">
+              <span className="block text-2xl font-black text-emerald-400">{counts.present}</span>
+              <span className="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider">En Sala</span>
+            </div>
+            <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
+              <span className="block text-2xl font-black text-amber-400">{counts.onTheWay}</span>
+              <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">En Camino</span>
+            </div>
+            <div className="px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-xl text-center">
+              <span className="block text-2xl font-black text-blue-400">{counts.arrived}</span>
+              <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wider">En Puerta</span>
+            </div>
           </div>
-        </div>
-      </header>
+
+          <div className="flex flex-col gap-2 items-end">
+            <div className="flex items-center gap-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+              <Clock className="w-4 h-4 text-slate-500 mx-1.5" />
+              {SHIFT_FILTERS.map((f) => (
+                <button key={f.id} onClick={() => setSelectedShift(f.id)} className={filterBtn(selectedShift === f.id)}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+              {ROOM_FILTERS.map((f) => (
+                <button key={f.id} onClick={() => setSelectedRoom(f.id)} className={filterBtn(selectedRoom === f.id)}>
+                  {f.label}
+                </button>
+              ))}
+              <button
+                onClick={() => resetDailyStatuses()}
+                title="Reiniciar estados del día"
+                className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors ml-1"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setHideNav(!hideNav)}
+                title={hideNav ? "Mostrar barra superior" : "Modo Pantalla Completa"}
+                className="p-1.5 text-slate-500 hover:text-sky-400 transition-colors"
+              >
+                {hideNav ? <Minimize2 className="w-4 h-4 text-amber-400" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        </header>
 
       <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3.5 mt-6 flex-1 content-start">
         {filteredStudents.map((student) => {
@@ -310,7 +349,8 @@ function TVDashboard() {
           );
         })}
       </section>
-    </main>
+      </main>
+    </div>
   );
 }
 

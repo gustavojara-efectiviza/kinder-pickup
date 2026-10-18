@@ -94,22 +94,11 @@ export default function PinAuthGuard({ children }: { children: React.ReactNode }
   }
 
   if (auth === "yes") {
-    return (
-      <>
-        <button
-          onClick={logout}
-          title="Bloquear sesión"
-          className="fixed top-3 right-3 z-[60] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-[11px] font-bold text-slate-300 hover:text-rose-300 hover:border-rose-500/50 backdrop-blur transition-colors print:hidden"
-        >
-          <LogOut className="w-3.5 h-3.5" /> Cerrar Sesión
-        </button>
-        {children}
-      </>
-    );
+    return <>{children}</>;
   }
 
   const padBtn =
-    "h-16 rounded-2xl bg-slate-900 border border-slate-800 text-2xl font-bold text-slate-100 hover:bg-slate-800 hover:border-amber-400/50 active:scale-95 transition-all select-none";
+    "h-16 rounded-2xl bg-slate-900 border border-slate-800 text-2xl font-bold text-slate-100 hover:bg-slate-800 hover:border-blue-400/50 active:scale-95 transition-all select-none";
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6 font-sans">
@@ -126,11 +115,17 @@ export default function PinAuthGuard({ children }: { children: React.ReactNode }
       `}</style>
 
       <div className="w-full max-w-xs text-center">
-        <div className="mx-auto mb-5 w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center">
-          {error ? <Lock className="w-8 h-8 text-rose-400" /> : <ShieldCheck className="w-8 h-8" />}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt="Pequeños Héroes"
+          className="mx-auto mb-4 h-20 w-auto object-contain rounded-xl bg-white/95 p-1.5 border border-sky-400/30 shadow-lg"
+        />
+        <div className="mx-auto mb-3 w-12 h-12 rounded-2xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center">
+          {error ? <Lock className="w-6 h-6 text-rose-400" /> : <ShieldCheck className="w-6 h-6 text-blue-400" />}
         </div>
-        <h1 className="text-xl font-black tracking-tight">Acceso Restringido</h1>
-        <p className="text-xs text-slate-400 mt-1">Dirección &amp; Administración</p>
+        <h1 className="text-xl font-black tracking-tight text-white">Acceso Restringido</h1>
+        <p className="text-xs text-slate-400 mt-0.5">Espacio de Desarrollo Infantil · N° 8161</p>
 
         <div className={`flex justify-center gap-4 mt-7 mb-2 ${error ? "pin-shake" : ""}`} aria-label="Dígitos ingresados">
           {Array.from({ length: ADMIN_PIN.length }).map((_, i) => (

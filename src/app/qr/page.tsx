@@ -5,6 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Search, Printer, ExternalLink, Tv, Users, Clock, ArrowLeft, RefreshCw, Phone } from "lucide-react";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
 import PinAuthGuard from "@/components/PinAuthGuard";
+import AppNavigation from "@/components/AppNavigation";
 import type { RoomId, ShiftType } from "@/types/pickup";
 
 const ROOMS: { id: RoomId; label: string }[] = [
@@ -92,51 +93,46 @@ function QrCredentialsContent() {
   }
 
   const filterBtn = (active: boolean) =>
-    `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
-      active ? "bg-amber-400 text-slate-950" : "text-slate-400 hover:text-white"
+    `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+      active
+        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 border border-blue-400/40"
+        : "text-slate-400 hover:text-white hover:bg-slate-800/80"
     }`;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans print:bg-white print:p-0 print:text-black">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans print:bg-white print:p-0 print:text-black">
       <style>{printStyles}</style>
 
-      {/* Cabecera y controles (ocultos al imprimir) */}
-      <div className="print:hidden">
-        <header className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-400/10 rounded-2xl border border-amber-400/20 text-amber-400">
-              <Users className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Credenciales &amp; Códigos QR</h1>
-              <p className="text-xs text-slate-400">
-                Pases oficiales de retiro · {filtered.length} de {students.length} alumnos
-              </p>
-            </div>
-          </div>
+      {/* Navegación global */}
+      <AppNavigation current="qr" />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <a
-              href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" /> Admin
-            </a>
-            <a
-              href="/tv"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
-            >
-              <Tv className="w-4 h-4" /> TV
-            </a>
-            <button
-              onClick={printAll}
-              disabled={filtered.length === 0}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 text-xs font-black transition-colors shadow-lg shadow-amber-400/10"
-            >
-              <Printer className="w-4 h-4" /> Imprimir Todo ({filtered.length})
-            </button>
-          </div>
-        </header>
+      {/* Contenido principal */}
+      <main className="max-w-7xl w-full mx-auto p-6 flex-1 flex flex-col print:p-0 print:max-w-none">
+        {/* Cabecera y controles (ocultos al imprimir) */}
+        <div className="print:hidden">
+          <header className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 bg-blue-600/15 rounded-2xl border border-blue-500/30 text-blue-400 shadow-sm shadow-blue-500/10">
+                <Users className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-black tracking-tight text-white">Credenciales &amp; Códigos QR</h1>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Emisión oficial de pases y carnets · <span className="text-blue-400 font-semibold">{filtered.length}</span> de {students.length} alumnos
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={printAll}
+                disabled={filtered.length === 0}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/20 border border-blue-400/40"
+              >
+                <Printer className="w-4 h-4" /> Imprimir Todo ({filtered.length})
+              </button>
+            </div>
+          </header>
 
         <section className="mt-5 space-y-3">
           <div className="relative max-w-md">
@@ -190,8 +186,13 @@ function QrCredentialsContent() {
                 hiddenOnPrint ? "print:hidden" : ""
               }`}
             >
-              <div className="bg-amber-400 text-slate-950 text-center py-2 text-[11px] font-black uppercase tracking-[0.18em]">
-                Kinder Pickup · Pase Oficial
+              <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white flex items-center justify-between px-3.5 py-2">
+                <div className="flex items-center gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/logo.png" alt="Logo" className="h-5 w-auto object-contain bg-white rounded p-0.5" />
+                  <span className="text-[10px] font-black uppercase tracking-wider">PEQUEÑOS HÉROES</span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-200">PASE OFICIAL</span>
               </div>
 
               <div className="flex items-center gap-3 px-4 pt-3">
@@ -269,6 +270,7 @@ function QrCredentialsContent() {
           </p>
         )}
       </section>
-    </main>
+      </main>
+    </div>
   );
 }

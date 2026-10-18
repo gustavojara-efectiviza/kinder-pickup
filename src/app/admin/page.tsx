@@ -20,6 +20,7 @@ import {
 import { db } from "@/config/firebase";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
 import PinAuthGuard from "@/components/PinAuthGuard";
+import AppNavigation from "@/components/AppNavigation";
 import type {
   MedicalInfo,
   PickupStatus,
@@ -369,49 +370,46 @@ function AdminContent() {
   }
 
   const filterBtn = (active: boolean) =>
-    `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
-      active ? "bg-amber-400 text-slate-950" : "text-slate-400 hover:text-white"
+    `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+      active
+        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 border border-blue-400/40"
+        : "text-slate-400 hover:text-white hover:bg-slate-800/80"
     }`;
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
-      {/* Cabecera */}
-      <header className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-amber-400/10 rounded-2xl border border-amber-400/20 text-amber-400">
-            <Users className="w-8 h-8" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Administración de Alumnos</h1>
-            <p className="text-xs text-slate-400">
-              Dirección / Secretaría · {filtered.length} de {students.length} alumnos
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+      <AppNavigation current="admin" />
 
-        <div className="flex flex-wrap items-center gap-2">
-          <a
-            href="/tv"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors"
-          >
-            <Tv className="w-4 h-4" /> Abrir TV <ExternalLink className="w-3 h-3 text-slate-500" />
-          </a>
-          <button
-            onClick={handleResetDay}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs font-bold text-rose-300 hover:bg-rose-500/20 transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" /> Resetear Día
-          </button>
-          <button
-            onClick={openNew}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black transition-colors shadow-lg shadow-amber-400/10"
-          >
-            <Plus className="w-4 h-4" /> Nuevo Alumno
-          </button>
-        </div>
-      </header>
+      <main className="max-w-7xl w-full mx-auto p-6 flex-1 flex flex-col">
+        {/* Cabecera de Sección */}
+        <header className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 bg-blue-600/15 rounded-2xl border border-blue-500/30 text-blue-400 shadow-sm shadow-blue-500/10">
+              <Users className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black tracking-tight text-white">Administración de Alumnos</h1>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Dirección &amp; Secretaría · <span className="text-blue-400 font-semibold">{filtered.length}</span> de {students.length} alumnos matriculados
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={handleResetDay}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-rose-500/30 hover:bg-rose-500/10 text-xs font-bold text-slate-300 hover:text-rose-300 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4 text-rose-400" /> Resetear Día
+            </button>
+            <button
+              onClick={openNew}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/20 border border-blue-400/40"
+            >
+              <Plus className="w-4 h-4" /> Nuevo Alumno
+            </button>
+          </div>
+        </header>
 
       {notice && (
         <div
@@ -765,6 +763,7 @@ function AdminContent() {
           </form>
         </div>
       )}
-    </main>
+      </main>
+    </div>
   );
 }

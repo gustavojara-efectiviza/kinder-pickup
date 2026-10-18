@@ -76,8 +76,23 @@ function ParentContent() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-6 max-w-md mx-auto font-sans">
-      <header className="text-center pt-4">
-        <span className="text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-400/10 border border-amber-400/20 px-3 py-1 rounded-full">
+      <header className="text-center pt-2 flex flex-col items-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt="Pequeños Héroes"
+          className="h-16 w-auto object-contain rounded-2xl bg-white/95 p-1.5 border border-sky-400/30 shadow-lg mb-2"
+        />
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <span className="text-[11px] font-black uppercase tracking-wider text-sky-400">
+            PEQUEÑOS HÉROES
+          </span>
+          <span className="text-[10px] text-slate-500">•</span>
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            EDI N° 8161
+          </span>
+        </div>
+        <span className="text-xs font-semibold uppercase tracking-wider text-blue-300 bg-blue-500/10 border border-blue-500/30 px-3 py-1 rounded-full">
           Pase Digital &amp; Geofence
         </span>
         <h1 className="text-2xl font-black text-white mt-3">{student.name}</h1>
@@ -185,16 +200,16 @@ function ParentContent() {
         <button
           onClick={handleNotifyDeparture}
           disabled={student.status === "ON_THE_WAY" || student.status === "ARRIVED" || student.status === "DISMISSED"}
-          className="w-full py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-98 text-slate-950 font-black text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-amber-400/10"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-98 text-white font-black text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20 border border-blue-400/30"
         >
-          <Navigation className="w-5 h-5 fill-slate-950" />
+          <Navigation className="w-5 h-5 fill-white" />
           Forzar &quot;En Camino&quot; Manual
         </button>
 
         <button
           onClick={handleNotifyArrival}
           disabled={student.status !== "ON_THE_WAY"}
-          className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-98 text-white font-black text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-98 text-white font-black text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-emerald-600/20 border border-emerald-400/30"
         >
           <CheckCircle2 className="w-5 h-5" />
           Forzar &quot;En Puerta&quot; Manual
