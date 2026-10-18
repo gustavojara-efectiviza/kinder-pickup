@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { db } from "@/config/firebase";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
+import PinAuthGuard from "@/components/PinAuthGuard";
 import type {
   MedicalInfo,
   PickupStatus,
@@ -149,6 +150,14 @@ const inputClass =
 const labelClass = "block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1";
 
 export default function AdminPage() {
+  return (
+    <PinAuthGuard>
+      <AdminContent />
+    </PinAuthGuard>
+  );
+}
+
+function AdminContent() {
   const { students, loading, resetDailyStatuses } = usePickupRealtime();
 
   const [search, setSearch] = useState("");

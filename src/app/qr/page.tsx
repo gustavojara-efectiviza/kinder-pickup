@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useSyncExternalStore } from "react
 import { QRCodeSVG } from "qrcode.react";
 import { Search, Printer, ExternalLink, Tv, Users, Clock, ArrowLeft, RefreshCw, Phone } from "lucide-react";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
+import PinAuthGuard from "@/components/PinAuthGuard";
 import type { RoomId, ShiftType } from "@/types/pickup";
 
 const ROOMS: { id: RoomId; label: string }[] = [
@@ -38,6 +39,14 @@ const printStyles = `
 `;
 
 export default function QrCredentialsPage() {
+  return (
+    <PinAuthGuard>
+      <QrCredentialsContent />
+    </PinAuthGuard>
+  );
+}
+
+function QrCredentialsContent() {
   const { students, loading } = usePickupRealtime();
   const origin = useSyncExternalStore(subscribeNoop, getOrigin, getServerOrigin);
 
