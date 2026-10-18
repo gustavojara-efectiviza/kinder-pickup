@@ -3,20 +3,24 @@
 import React, { Suspense, useState } from "react";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
 import { useGeofence } from "@/core/use-geofence";
-import { CheckCircle2, Navigation, AlertTriangle, Clock, Radio } from "lucide-react";
+import { CheckCircle2, Navigation, AlertTriangle, Clock, Radio, Cake, XCircle } from "lucide-react";
 import { useParams } from "next/navigation";
+import { getBirthdayInfo } from "@/core/birthday";
 
 function ParentContent() {
   const params = useParams();
   const studentId = params?.id as string;
   const { students, updateStudentStatus } = usePickupRealtime();
   const [gpsEnabled, setGpsEnabled] = useState<boolean>(true);
+  const [now] = useState<Date>(() => new Date());
 
   const student = students.find((s) => s.id === studentId);
+  const isAbsent = student?.status === "ABSENT";
 
   const { distance, eta, accuracy, error, isWatching } = useGeofence({
     currentStatus: student?.status || "ABSENT",
-    enabled: gpsEnabled && !!student && student.status !== "DISMISSED",
+    // El rastreo GPS queda inactivo mientras el alumno esté registrado como ausente
+    enabled: gpsEnabled && !!student && student.status !== "DISMISSED" && !isAbsent,
     onStateChange: (newState, dist, calculatedEta) => {
       if (!student) return;
       updateStudentStatus(
@@ -55,6 +59,21 @@ function ParentContent() {
     updateStudentStatus(student.id, "ARRIVED");
   };
 
+  const handleConfirmAttendance = () => {
+    updateStudentStatus(student.id, "PRESENT");
+  };
+
+  const handleMarkAbsent = () => {
+    updateStudentStatus(student.id, "ABSENT");
+  };
+
+  const birthday = getBirthdayInfo(student.birthDate, now);
+
+  // Ventana de check-in: mientras no haya iniciado la salida y antes de la hora de retiro pactada
+  const [exitH, exitM] = (student.schedule?.exitTime ?? "23:59").split(":").map(Number);
+  const beforeExit = now.getHours() * 60 + now.getMinutes() < exitH * 60 + exitM;
+  const showCheckIn = (student.status === "ABSENT" || student.status === "PRESENT") && beforeExit;
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-6 max-w-md mx-auto font-sans">
       <header className="text-center pt-4">
@@ -63,6 +82,51 @@ function ParentContent() {
         </span>
         <h1 className="text-2xl font-black text-white mt-3">{student.name}</h1>
         <p className="text-xs text-slate-400 mt-0.5">Sala: {student.room}</p>
+        {birthday?.isSoon && (
+          <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-pink-300 bg-pink-500/10 border border-pink-500/30 px-3 py-1.5 rounded-full">
+            <Cake className="w-4 h-4" />
+            {birthday.isToday
+              ? `¡Feliz cumpleaños, ${student.name.split(" ")[0]}! 🎉`
+              : `¡Pronto cumple años! 🎂 en ${birthday.daysUntil} ${birthday.daysUntil === 1 ? "día" : "días"}`}
+          </p>
+        )}
+
+        {showCheckIn && (
+          <div className="mt-4 text-left bg-slate-900 border border-amber-400/30 rounded-2xl p-4 shadow-lg">
+            {isAbsent ? (
+              <>
+                <p className="text-sm font-bold text-slate-200">Registrado como ausente</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  El rastreo por GPS permanece inactivo por hoy.
+                </p>
+                <button
+                  onClick={handleConfirmAttendance}
+                  className="mt-3 w-full py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 text-xs font-bold hover:bg-emerald-500/20 transition-colors"
+                >
+                  Fue un error: reactivar asistencia
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-bold text-white">¿Asiste hoy al Kinder?</p>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={handleConfirmAttendance}
+                    className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> Confirmar Asistencia Hoy
+                  </button>
+                  <button
+                    onClick={handleMarkAbsent}
+                    className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-rose-500/20 border border-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <XCircle className="w-4 h-4" /> No asistirá hoy
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Telemetría y Estado de GPS */}

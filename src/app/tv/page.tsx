@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { Suspense, useState, useMemo, useEffect, useRef } from "react";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
 import { PickupStatus, RoomId, ShiftType } from "@/types/pickup";
 import confetti from "canvas-confetti";
-import { Users, AlertCircle, Bell, RefreshCw, Pill, Utensils, MapPin, Timer, Clock } from "lucide-react";
+import { Users, AlertCircle, Bell, RefreshCw, Pill, Utensils, MapPin, Timer, Clock, Cake } from "lucide-react";
+import { getBirthdayInfo } from "@/core/birthday";
 
 const STATUS_CONFIG: Record<PickupStatus, { label: string; color: string; border: string }> = {
   ABSENT: { label: "Ausente", color: "bg-slate-200 text-slate-600", border: "border-slate-300" },
@@ -44,10 +45,17 @@ function defaultShift(): ShiftType {
   return minutes < 12 * 60 + 30 ? "MANANA" : "TARDE";
 }
 
-export default function TVDashboardPage() {
+function TVDashboard() {
   const { students, loading, updateStudentStatus, resetDailyStatuses } = usePickupRealtime();
   const [selectedRoom, setSelectedRoom] = useState<RoomId | "ALL">("ALL");
   const [selectedShift, setSelectedShift] = useState<ShiftType | "ALL">(defaultShift);
+  const [today, setToday] = useState<Date>(() => new Date());
+
+  // Refresca la fecha para que los conteos de cumpleaños cambien al pasar la medianoche
+  useEffect(() => {
+    const id = setInterval(() => setToday(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const prevStatusRef = useRef<Map<string, PickupStatus> | null>(null);
@@ -104,7 +112,7 @@ export default function TVDashboardPage() {
   }, [students]);
 
   const filteredStudents = useMemo(() => {
-    return students.filter((s) => {
+    const list = students.filter((s) => {
       const roomOk = selectedRoom === "ALL" || s.room === selectedRoom;
       const shift = s.schedule?.shift;
       // Los alumnos de doble turno están presentes tanto en la mañana como en la tarde
@@ -114,6 +122,8 @@ export default function TVDashboardPage() {
         (shift === "DOBLE_TURNO" && (selectedShift === "MANANA" || selectedShift === "TARDE"));
       return roomOk && shiftOk;
     });
+    // Los ausentes van al final para que el personal se enfoque en quienes están en sala
+    return [...list].sort((a, b) => Number(a.status === "ABSENT") - Number(b.status === "ABSENT"));
   }, [students, selectedRoom, selectedShift]);
 
   const counts = useMemo(() => {
@@ -200,6 +210,8 @@ export default function TVDashboardPage() {
           const allergies = student.medical?.allergies || student.allergies;
           const diet = student.medical?.specialDiet;
           const onTheWay = student.status === "ON_THE_WAY";
+          const absent = student.status === "ABSENT";
+          const birthday = getBirthdayInfo(student.birthDate, today);
           return (
             <div
               key={student.id}
@@ -213,7 +225,7 @@ export default function TVDashboardPage() {
               }}
               className={`relative flex flex-col p-3 rounded-2xl border-2 transition-all cursor-pointer select-none hover:scale-102 ${cfg.border} ${
                 onTheWay ? "bg-amber-950/40" : "bg-slate-900"
-              }`}
+              } ${absent ? "opacity-40 grayscale" : ""}`}
             >
               <div className="flex items-center justify-between gap-1 mb-2">
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${cfg.color}`}>
@@ -221,6 +233,21 @@ export default function TVDashboardPage() {
                 </span>
                 <span className="text-[9px] font-semibold text-slate-400 uppercase">{ROOM_LABEL[student.room] ?? student.room}</span>
               </div>
+
+              {birthday?.isSoon && (
+                <div
+                  className={`mb-1 inline-flex items-center gap-1 self-start text-[11px] font-black px-2 py-0.5 rounded-full border ${
+                    birthday.isToday
+                      ? "bg-pink-500 text-white border-pink-300 animate-bounce"
+                      : "bg-pink-500/15 text-pink-300 border-pink-500/40"
+                  }`}
+                >
+                  <Cake className="w-3 h-3" />
+                  {birthday.isToday
+                    ? "🎉 ¡HOY CUMPLE!"
+                    : `🎂 en ${birthday.daysUntil} ${birthday.daysUntil === 1 ? "día" : "días"}`}
+                </div>
+              )}
 
               <div className="flex items-center gap-2.5 my-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -284,5 +311,20 @@ export default function TVDashboardPage() {
         })}
       </section>
     </main>
+  );
+}
+
+export default function TVDashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-slate-950 text-white font-sans">
+          <RefreshCw className="animate-spin w-8 h-8 mr-3 text-amber-400" />
+          <span className="text-xl">Conectando a la central en tiempo real...</span>
+        </div>
+      }
+    >
+      <TVDashboard />
+    </Suspense>
   );
 }

@@ -32,10 +32,13 @@ export interface Student {
     room: RoomId;
     status: PickupStatus;
     photoUrl: string;
+    birthDate?: string; // Formato ISO "YYYY-MM-DD"
     schedule: ScheduleContract;
     medical?: MedicalInfo;
     allergies?: string; // Para compatibilidad hacia atrás
     currentTutor?: TutorInfo | null;
+    primaryTutor?: TutorInfo; // Tutor principal / autorizado (ficha administrativa)
+    authorizedPersons?: TutorInfo[]; // Otras personas autorizadas a retirar (rol + teléfono)
     distanceMeters?: number;
     etaMinutes?: number;
     updatedAt?: number;

@@ -55,6 +55,33 @@ function statusFor(index: number): PickupStatus {
 // 3 alumnos de mañana con horario extendido hasta las 12:00
 const EXTENDED_MORNING = new Set([1, 11, 21]);
 
+const pad = (n: number) => String(n).padStart(2, "0");
+const isoDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+// Índices con cumpleaños: 2 hoy y 4 en los próximos 1 a 6 días
+const BIRTHDAY_OFFSETS: Record<number, number> = { 3: 0, 17: 0, 8: 1, 24: 3, 33: 5, 40: 6 };
+
+function birthDateFor(index: number): string {
+    const today = new Date();
+    const age = 1 + (index % 5); // 1 a 5 años
+    const offset = BIRTHDAY_OFFSETS[index];
+    if (offset !== undefined) {
+        const target = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
+        return `${target.getFullYear() - age}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}`;
+    }
+    // Resto: fecha determinística repartida en el año, fuera de la ventana de 0-7 días
+    let dayOfYear = (index * 37 + 11) % 365;
+    let candidate = new Date(today.getFullYear() - age, 0, 1 + dayOfYear);
+    for (let guard = 0; guard < 365; guard++) {
+        const thisYear = new Date(today.getFullYear(), candidate.getMonth(), candidate.getDate());
+        const diff = Math.round((thisYear.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) / 86_400_000);
+        if (diff < 0 || diff > 7) break;
+        dayOfYear = (dayOfYear + 10) % 365;
+        candidate = new Date(today.getFullYear() - age, 0, 1 + dayOfYear);
+    }
+    return isoDate(candidate);
+}
+
 function scheduleFor(index: number) {
     const shift = shiftFor(index);
     if (shift === "MANANA") {
@@ -113,6 +140,7 @@ async function seed() {
             name: nombre,
             photoUrl: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(nombre)}`,
             room,
+            birthDate: birthDateFor(index),
             status,
             schedule: scheduleFor(index),
             medical,
