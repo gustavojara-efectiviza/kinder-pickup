@@ -36,7 +36,7 @@ export function usePickupRealtime() {
     }, []);
 
     const updateStudentStatus = useCallback(
-        async (studentId: string, status: PickupStatus, tutor?: Tutor, etaMinutes?: number) => {
+        async (studentId: string, status: PickupStatus, tutor?: Tutor, etaMinutes?: number, distanceMeters?: number) => {
             try {
                 const studentRef = doc(db, "students", studentId);
                 const updateData: Partial<Student> = {
@@ -49,6 +49,9 @@ export function usePickupRealtime() {
                 }
                 if (etaMinutes !== undefined) {
                     updateData.etaMinutes = etaMinutes;
+                }
+                if (distanceMeters !== undefined) {
+                    updateData.distanceMeters = distanceMeters;
                 }
 
                 await updateDoc(studentRef, updateData);
