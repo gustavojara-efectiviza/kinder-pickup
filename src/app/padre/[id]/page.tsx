@@ -3,7 +3,8 @@
 import React, { Suspense, useState } from "react";
 import { usePickupRealtime } from "@/core/use-pickup-realtime";
 import { useGeofence } from "@/core/use-geofence";
-import { CheckCircle2, Navigation, AlertTriangle, Clock, Radio, Cake, XCircle } from "lucide-react";
+import { useFcm } from "@/core/use-fcm";
+import { CheckCircle2, Navigation, AlertTriangle, Clock, Radio, Cake, XCircle, Bell, BellRing, Sparkles } from "lucide-react";
 import { useParams } from "next/navigation";
 import { getBirthdayInfo } from "@/core/birthday";
 
@@ -16,6 +17,19 @@ function ParentContent() {
 
   const student = students.find((s) => s.id === studentId);
   const isAbsent = student?.status === "ABSENT";
+
+  const {
+    permission,
+    isLoading: isFcmLoading,
+    message: fcmMessage,
+    requestPermissionAndGetToken,
+    sendTestNotification,
+    clearMessage,
+  } = useFcm({
+    studentId: student?.id || "",
+    currentToken: student?.fcmToken,
+    studentName: student?.name || "el alumno",
+  });
 
   const { distance, eta, accuracy, error, isWatching } = useGeofence({
     currentStatus: student?.status || "ABSENT",
@@ -105,6 +119,76 @@ function ParentContent() {
               : `¡Pronto cumple años! 🎂 en ${birthday.daysUntil} ${birthday.daysUntil === 1 ? "día" : "días"}`}
           </p>
         )}
+
+        {/* Notificaciones Web Push de Salida Escolar */}
+        <div className="mt-4 w-full text-left bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shrink-0">
+                <BellRing className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                  Alertas de Salida en Celular
+                  {permission === "granted" && (
+                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      Activas
+                    </span>
+                  )}
+                </p>
+                <p className="text-[11px] text-slate-400 leading-tight">
+                  Vibración 30 min antes para confirmar retiro
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {permission === "granted" ? (
+            <div className="space-y-2 mt-3">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>✅ Alertas Activas en este Móvil</span>
+              </div>
+              <button
+                onClick={() => sendTestNotification()}
+                disabled={isFcmLoading}
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 active:scale-[0.99] border border-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                {isFcmLoading ? "Despachando alerta..." : "🧪 Probar Notificación Ahora"}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={requestPermissionAndGetToken}
+              disabled={isFcmLoading}
+              className="mt-3 w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              <Bell className="w-4 h-4" />
+              {isFcmLoading ? "Activando..." : "🔔 Activar Alertas de Salida en mi Celular"}
+            </button>
+          )}
+
+          {fcmMessage && (
+            <div
+              className={`mt-2.5 p-2 rounded-xl text-[11px] leading-tight flex items-start justify-between gap-2 ${
+                fcmMessage.type === "success"
+                  ? "bg-emerald-950/40 text-emerald-300 border border-emerald-500/30"
+                  : fcmMessage.type === "error"
+                  ? "bg-rose-950/40 text-rose-300 border border-rose-500/30"
+                  : "bg-sky-950/40 text-sky-300 border border-sky-500/30"
+              }`}
+            >
+              <span>{fcmMessage.text}</span>
+              <button
+                onClick={clearMessage}
+                className="text-slate-400 hover:text-white text-xs px-1"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
 
         {showCheckIn && (
           <div className="mt-4 text-left bg-slate-900 border border-amber-400/30 rounded-2xl p-4 shadow-lg">

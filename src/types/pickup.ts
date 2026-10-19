@@ -39,6 +39,7 @@ export interface Student {
     currentTutor?: TutorInfo | null;
     primaryTutor?: TutorInfo; // Tutor principal / autorizado (ficha administrativa)
     authorizedPersons?: TutorInfo[]; // Otras personas autorizadas a retirar (rol + teléfono)
+    fcmToken?: string; // Token Web Push para notificaciones al móvil del tutor
     distanceMeters?: number;
     etaMinutes?: number;
     updatedAt?: number;
